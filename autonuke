@@ -1,0 +1,15 @@
+#!/bin/bash
+for d in /sys/class/scsi_disk/*/device/block/sd*; do
+  b=$(basename $d)
+  dev=/dev/$b
+  #check device writeable
+  shred -s 512 -n 1 -f $dev || { echo “FAILED $b FAILED”; continue
+  }
+  set -x
+  ( shred -n 7 -z -f $dev > /root/shred_$b.log 2>&1 ) &
+  set +x
+done
+wait
+set -x
+wc -l /root/shred*
+set +x
